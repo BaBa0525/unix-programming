@@ -12,4 +12,4 @@ sandbox.o: sandbox.c
 	$(CC) -c $< $(CFLAGS)
 
 clean:
-	- rm -f sandbox.so sandbox.o
+	rm -f sandbox.so sandbox.o
