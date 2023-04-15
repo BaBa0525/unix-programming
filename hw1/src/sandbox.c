@@ -65,14 +65,14 @@ void read_config(char *buf, const char fn_type[]) {
     bool is_start = false;
     size_t nbytes = 0, len = 256;
     while ((nbytes = getline(&line_ptr, &len, fp)) != -1) {
-        if (is_start_with(buf, start)) {
+        if (is_start_with(line_ptr, start)) {
             is_start = true;
             continue;
         }
         if (!is_start) continue;
-        if (is_start_with(buf, end)) break;
+        if (is_start_with(line_ptr, end)) break;
 
-        strncpy(buf, line, nbytes);
+        strncpy(buf, line_ptr, nbytes);
         buf += nbytes;
     }
 }
