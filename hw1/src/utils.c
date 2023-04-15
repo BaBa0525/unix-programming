@@ -1,6 +1,7 @@
 #include "utils.h"
 
 #include <errno.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -39,7 +40,7 @@ void make_writable(uintptr_t addr) {
 ptrdiff_t get_offset(const char *symbol) {
     unsetenv("LD_PRELOAD");
 
-    char exe_path[128] = {};
+    char exe_path[PATH_MAX] = {};
     readlink("/proc/self/exe", exe_path, sizeof(exe_path));
 
     char syscmd[256] = {};
