@@ -1,15 +1,24 @@
-.PHONY: clean
+SRC_DIR = ./src
+OBJ_DIR = ./obj
+
+SRC = $(wildcard $(SRC_DIR)/*.c)
+OBJ = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRC))
 
 CC = gcc
-CFLAGS = -Wall -g -D_GNU_SOURCE -fPIC
+CFLAGS = -Wall -g -D_GNU_SOURCE -fPIC -I include
 LDFLAGS = -shared
 
+.PHONY: clean
 
-sandbox.so: sandbox.o
+sandbox.so: $(OBJ)
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-sandbox.o: sandbox.c
-	$(CC) -c $< $(CFLAGS)
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
+	$(CC) -c $< $(CFLAGS) -o $@
 
+$(OBJ_DIR):
+	mkdir -p $@
+	
 clean:
-	rm -f sandbox.so sandbox.o
+	@rm -rv $(OBJ_DIR)
+	@rm -v sandbox.so
