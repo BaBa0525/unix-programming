@@ -1,10 +1,14 @@
 #include "sandbox.h"
 
 #include <dlfcn.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
+#include "override.h"
+#include "utils.h"
 
 int __libc_start_main(int (*main)(int, char **, char **), int argc,
                       char **ubp_av, void (*init)(void), void (*fini)(void),
@@ -22,7 +26,7 @@ int __libc_start_main(int (*main)(int, char **, char **), int argc,
         printf("argv[%d]: %s\n", i, ubp_av[i]);
     }
 
-    call_readelf();
+    hijack_api_calls();
 
     printf("The value of the environment variable LOGGER_FD is: %s\n",
            getenv("LOGGER_FD"));
@@ -30,13 +34,45 @@ int __libc_start_main(int (*main)(int, char **, char **), int argc,
     return start_fn(main, argc, ubp_av, init, fini, rtld_fini, stack_end);
 }
 
-void call_readelf() {
-    unsetenv("LD_PRELOAD");
+void hijack_api_calls() {
+    uintptr_t base_addr = get_base_addr();
+    void *fn_ptr[] = {secure_open,    secure_read,        secure_write,
+                      secure_connect, secure_getaddrinfo, secure_system};
+    const char api_calls[][256] = {OPEN,    READ,        WRITE,
+                                   CONNECT, GETADDRINFO, SYSTEM};
 
-    char exe_path[100] = {};
-    readlink("/proc/self/exe", exe_path, sizeof(exe_path));
+    for (int i = 0; i < sizeof(api_calls) / sizeof(api_calls[0]); i++) {
+        printf("hijacking %s...\n", api_calls[i]);
+        uintptr_t got_offset = get_offset(api_calls[i]);
+        uintptr_t got_addr = base_addr + got_offset;
+        make_writable(got_addr);
+        memcpy((void *)got_addr, &fn_ptr[i], sizeof(void *));
+    }
+}
 
-    char syscmd[100] = {};
-    snprintf(syscmd, 120, "readelf -r %s", exe_path);
-    system(syscmd);
+void read_config(char *buf, const char fn_type[]) {
+    FILE *fp = fopen(CONFIG_PATH, "r");
+    if (fp == NULL) {
+        fprintf(stderr, "fopen() error: %s\n", strerror(errno));
+        exit(EXIT_FAILURE);
+    }
+
+    char start[256] = {}, end[256] = {}, line[256] = {};
+    char *line_ptr = line;
+    snprintf(start, 256, "BEGIN %s-blacklist", fn_type);
+    snprintf(end, 256, "END %s-blacklist", fn_type);
+
+    bool is_start = false;
+    size_t nbytes = 0, len = 256;
+    while ((nbytes = getline(&line_ptr, &len, fp)) != -1) {
+        if (is_start_with(buf, start)) {
+            is_start = true;
+            continue;
+        }
+        if (!is_start) continue;
+        if (is_start_with(buf, end)) break;
+
+        strncpy(buf, line, nbytes);
+        buf += nbytes;
+    }
 }
