@@ -6,9 +6,9 @@
 
 int secure_open(const char *pathname, int flags, mode_t mode);
 
-int secure_read(int fd, void *buf, size_t count);
+ssize_t secure_read(int fd, void *buf, size_t count);
 
-int secure_write(int fd, const void *buf, size_t count);
+ssize_t secure_write(int fd, const void *buf, size_t count);
 
 int secure_connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
 

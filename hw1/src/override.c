@@ -19,7 +19,7 @@ int secure_open(const char *pathname, int flags, mode_t mode) {
         printf("realpath() error: %s\n", strerror(errno));
         return -1;
     }
-    read_config(blacklist, "open");
+    read_config(blacklist, OPEN);
 
     char *blocked_path = strtok(blacklist, "\n");
 
@@ -40,13 +40,42 @@ int secure_open(const char *pathname, int flags, mode_t mode) {
     return open(real_pathname, flags, mode);
 }
 
-int secure_read(int fd, void *buf, size_t count) {
+size_t match_cursor = 0;
+ssize_t secure_read(int fd, void *buf, size_t count) {
     printf("secure_read() is called with fd: %d, buf: %p, count: %zu\n", fd,
            buf, count);
-    return read(fd, buf, count);
+
+    char read_buf[131072] = {};
+    int nbytes = read(fd, read_buf, count);
+    if (nbytes == -1) {
+        printf("read() error: %s\n", strerror(errno));
+        return -1;
+    }
+
+    char blocked_str[1024] = {};
+    read_config(blocked_str, READ);
+    blocked_str[strlen(blocked_str) - 1] = '\0';
+
+    for (int i = 0; i < nbytes; i++) {
+        if (read_buf[i] != blocked_str[match_cursor]) {
+            match_cursor = 0;
+            continue;
+        }
+        match_cursor++;
+        if (match_cursor == strlen(blocked_str)) {
+            match_cursor = 0;
+            close(fd);
+            printf("read() is blocked for %s\n", blocked_str);
+            errno = EIO;
+            return -1;
+        }
+    }
+
+    memcpy(buf, read_buf, nbytes);
+    return nbytes;
 }
 
-int secure_write(int fd, const void *buf, size_t count) {
+ssize_t secure_write(int fd, const void *buf, size_t count) {
     printf("secure_write() is called with fd: %d, buf: %p, count: %zu\n", fd,
            buf, count);
     return write(fd, buf, count);
