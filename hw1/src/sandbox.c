@@ -75,4 +75,5 @@ void read_config(char *buf, const char fn_type[]) {
         strncpy(buf, line_ptr, nbytes);
         buf += nbytes;
     }
+    fclose(fp);
 }
