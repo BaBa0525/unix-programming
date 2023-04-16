@@ -1,3 +1,7 @@
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+
 #include "sandbox.h"
 
 #include <dlfcn.h>
@@ -17,20 +21,10 @@ int __libc_start_main(int (*main)(int, char **, char **), int argc,
     // This is the function that is called when the program starts.
     // We can use this to do some initialization before the program starts.
 
-    void *handle = dlopen(LIBC_PATH, RTLD_NOW);
-    if (!handle) {
-        fprintf(stderr, "dlopen() error: %s\n", dlerror());
-        exit(EXIT_FAILURE);
-    }
-
-    for (int i = 0; i < argc; i++) {
-        printf("argv[%d]: %s\n", i, ubp_av[i]);
-    }
-
     hijack_api_calls();
 
     LOGGER_FD = strtol(getenv("LOGGER_FD"), NULL, 10);
-    __libc_start_main_t start_fn = dlsym(handle, "__libc_start_main");
+    __libc_start_main_t start_fn = dlsym(RTLD_NEXT, "__libc_start_main");
     return start_fn(main, argc, ubp_av, init, fini, rtld_fini, stack_end);
 }
 
@@ -42,7 +36,6 @@ void hijack_api_calls() {
                                    CONNECT, GETADDRINFO, SYSTEM};
 
     for (int i = 0; i < sizeof(api_calls) / sizeof(api_calls[0]); i++) {
-        printf("hijacking %s...\n", api_calls[i]);
         uintptr_t got_offset = get_offset(api_calls[i]);
         uintptr_t got_addr = base_addr + got_offset;
         make_writable(got_addr);

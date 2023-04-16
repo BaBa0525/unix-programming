@@ -1,6 +1,5 @@
 #pragma once
 
-#define LIBC_PATH "/usr/lib/x86_64-linux-gnu/libc.so.6"
 #define CONFIG_PATH "/home/baba/lab/hw1/config.txt"
 
 #define OPEN "open"
