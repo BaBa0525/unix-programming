@@ -1,6 +1,6 @@
 BEGIN open-blacklist
 /etc/passwd
-/etc/shadow
+/etc/group
 END open-blacklist
 
 BEGIN read-blacklist
@@ -8,11 +8,12 @@ BEGIN read-blacklist
 END read-blacklist
 
 BEGIN connect-blacklist
-www.nycu.edu.tw:4433
+www.nycu.edu.tw:443
 google.com:80
 END connect-blacklist
 
 BEGIN getaddrinfo-blacklist
 www.ym.edu.tw
 www.nctu.edu.tw
+google.com
 END getaddrinfo-blacklist
