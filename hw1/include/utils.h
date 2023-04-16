@@ -1,5 +1,6 @@
 #pragma once
 
+#include <arpa/inet.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -16,7 +17,13 @@ extern int LOGGER_FD;
     } while (0)
 
 bool is_start_with(const char *str, const char *prefix);
+
 uintptr_t get_base_addr();
+
 ptrdiff_t get_offset(const char *symbol);
+
 void make_writable(uintptr_t addr);
+
 void get_log_path(int fd, char *fn_type, char *log_path);
+
+bool cmp_ip(struct in_addr addr, char *hostname);
