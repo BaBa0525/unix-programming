@@ -1,5 +1,6 @@
 SRC_DIR = ./src
 OBJ_DIR = ./obj
+LOG_DIR = ./logs
 
 SRC = $(wildcard $(SRC_DIR)/*.c)
 OBJ = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRC))
@@ -10,15 +11,15 @@ LDFLAGS = -shared
 
 .PHONY: clean
 
-sandbox.so: $(OBJ)
+sandbox.so: $(OBJ) | $(LOG_DIR)
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
 	$(CC) -c $< $(CFLAGS) -o $@
 
-$(OBJ_DIR):
+$(OBJ_DIR) $(LOG_DIR):
 	mkdir -p $@
 	
 clean:
-	@rm -rv $(OBJ_DIR)
+	@rm -rv $(OBJ_DIR) $(LOG_DIR)
 	@rm -v sandbox.so

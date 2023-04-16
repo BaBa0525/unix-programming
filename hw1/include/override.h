@@ -4,7 +4,17 @@
 #include <netdb.h>
 #include <sys/socket.h>
 
-int secure_open(const char *pathname, int flags, mode_t mode);
+#ifndef __OPEN_NEEDS_MODE
+/** https://elixir.bootlin.com/glibc/latest/source/io/fcntl.h#L40 */
+#ifdef __O_TMPFILE
+#define __OPEN_NEEDS_MODE(oflag) \
+    (((oflag)&O_CREAT) != 0 || ((oflag)&__O_TMPFILE) == __O_TMPFILE)
+#else
+#define __OPEN_NEEDS_MODE(oflag) (((oflag)&O_CREAT) != 0)
+#endif
+#endif
+
+int secure_open(const char *pathname, int flags, ...);
 
 ssize_t secure_read(int fd, void *buf, size_t count);
 

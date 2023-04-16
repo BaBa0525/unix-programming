@@ -10,6 +10,7 @@
 #include "override.h"
 #include "utils.h"
 
+int LOGGER_FD = 1;
 int __libc_start_main(int (*main)(int, char **, char **), int argc,
                       char **ubp_av, void (*init)(void), void (*fini)(void),
                       void (*rtld_fini)(void), void(*stack_end)) {
@@ -28,8 +29,7 @@ int __libc_start_main(int (*main)(int, char **, char **), int argc,
 
     hijack_api_calls();
 
-    printf("The value of the environment variable LOGGER_FD is: %s\n",
-           getenv("LOGGER_FD"));
+    LOGGER_FD = strtol(getenv("LOGGER_FD"), NULL, 10);
     __libc_start_main_t start_fn = dlsym(handle, "__libc_start_main");
     return start_fn(main, argc, ubp_av, init, fini, rtld_fini, stack_end);
 }

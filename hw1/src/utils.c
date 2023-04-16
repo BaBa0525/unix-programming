@@ -53,3 +53,8 @@ ptrdiff_t get_offset(const char *symbol) {
 
     return offset;
 }
+
+void get_log_path(int fd, char *fn_type, char *log_path) {
+    pid_t pid = getpid();
+    snprintf(log_path, PATH_MAX, "./logs/%d-%d-%s", pid, fd, fn_type);
+}
