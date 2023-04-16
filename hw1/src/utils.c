@@ -43,8 +43,9 @@ ptrdiff_t get_offset(const char *symbol) {
     char exe_path[PATH_MAX] = {};
     readlink("/proc/self/exe", exe_path, sizeof(exe_path));
 
-    char syscmd[256] = {};
-    snprintf(syscmd, 256, "readelf -r %s | grep ' %s@'", exe_path, symbol);
+    char syscmd[PATH_MAX * 2] = {};
+    snprintf(syscmd, PATH_MAX * 2, "readelf -r %s | grep ' %s@'", exe_path,
+             symbol);
     FILE *pipe = popen(syscmd, "r");
     ptrdiff_t offset = 0;
     fscanf(pipe, "%lx", &offset);
