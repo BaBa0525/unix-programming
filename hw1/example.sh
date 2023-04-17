@@ -1,5 +1,5 @@
 case $1 in
-1) ./launcher ./sandbox.so config.txt cat /etc/passwdl ;;
+1) ./launcher ./sandbox.so config.txt cat /etc/passwd ;;
 2) ./launcher ./sandbox.so config.txt cat /etc/hosts ;;
 3) ./launcher ./sandbox.so config.txt cat /etc/ssl/certs/Amazon_Root_CA_1.pem ;;
 5) ./launcher ./sandbox.so config.txt wget http://google.com -t 1 ;;
