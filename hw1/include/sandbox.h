@@ -1,7 +1,5 @@
 #pragma once
 
-#define CONFIG_PATH "/home/baba/lab/hw1/config.txt"
-
 #define OPEN "open"
 #define READ "read"
 #define WRITE "write"

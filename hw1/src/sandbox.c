@@ -44,7 +44,13 @@ void hijack_api_calls() {
 }
 
 void read_config(char *buf, const char fn_type[]) {
-    FILE *fp = fopen(CONFIG_PATH, "r");
+    char *config_path = getenv("SANDBOX_CONFIG");
+    if (config_path == NULL) {
+        fprintf(stderr, "SANDBOX_CONFIG is not set\n");
+        exit(EXIT_FAILURE);
+    }
+    printf("config_path: %s\n", config_path);
+    FILE *fp = fopen(config_path, "r");
     if (fp == NULL) {
         fprintf(stderr, "fopen() error: %s\n", strerror(errno));
         exit(EXIT_FAILURE);
