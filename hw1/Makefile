@@ -7,7 +7,7 @@ OBJ = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRC))
 
 CC = gcc
 CFLAGS = -Wall -g -D_GNU_SOURCE -fPIC -I include
-LDFLAGS = -shared
+LDFLAGS = -shared -ldl
 
 .PHONY: clean
 
