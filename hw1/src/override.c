@@ -36,9 +36,9 @@ int secure_open(const char *pathname, int flags, ...) {
     while (blocked_path != NULL) {
         char blocked_real_path[PATH_MAX] = {};
         if (realpath(blocked_path, blocked_real_path) == NULL) {
-            perror("realpath()");
-            Logger("open(\"%s\", %d, %hu) = -1\n", pathname, flags, mode);
-            return -1;
+            printf("realpath() error: %s\n", strerror(errno));
+            blocked_path = strtok(NULL, "\n");
+            continue;
         }
         if (strcmp(real_pathname, blocked_real_path) == 0) {
             errno = EACCES;
@@ -99,8 +99,6 @@ ssize_t secure_read(int fd, void *buf, size_t count) {
 }
 
 ssize_t secure_write(int fd, const void *buf, size_t count) {
-    Logger("write(%d, %12p, %zu) = %zu\n", fd, buf, count, count);
-
     char log_file_name[PATH_MAX] = {};
     get_log_path(fd, WRITE, log_file_name);
     FILE *fp = fopen(log_file_name, "a");
@@ -112,7 +110,9 @@ ssize_t secure_write(int fd, const void *buf, size_t count) {
     fwrite(buf, 1, count, fp);
     fclose(fp);
 
-    return write(fd, buf, count);
+    size_t ret = write(fd, buf, count);
+    Logger("write(%d, %12p, %zu) = %zu\n", fd, buf, count, ret);
+    return ret;
 }
 
 int secure_connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
